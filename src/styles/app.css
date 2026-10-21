@@ -281,7 +281,6 @@ button { font-family: inherit; cursor: pointer; }
 .raw-table-card .ant-table-body { flex: 1; min-height: 0; }
 .raw-table-card .ant-table-pagination { margin: auto 0 0 !important; padding-top: 16px; }
 .raw-table-card-compact .ant-table-wrapper, .raw-table-card-compact .ant-spin-nested-loading, .raw-table-card-compact .ant-spin-container, .raw-table-card-compact .ant-table, .raw-table-card-compact .ant-table-container { flex: none; min-height: 0; }
-.raw-table-card-compact .raw-table-content { flex: none; }
 .raw-table-card-compact .ant-table-body { flex: none; min-height: 0; height: auto !important; max-height: none !important; overflow-y: hidden; }
 .raw-table-content { flex: 1; min-height: 0; overflow: hidden; }
 .raw-table-empty { display: flex; flex: 1; min-height: 0; align-items: center; justify-content: center; }

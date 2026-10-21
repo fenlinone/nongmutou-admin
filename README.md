@@ -1,5 +1,7 @@
 # 农牧投蓝莓系统 · 后台交互原型
 
+**在线预览：** [GitHub Pages](https://fenlinone.github.io/nongmutou-admin/)（首次部署完成后可用）
+
 **离线使用：直接双击打开 [delivery/index.html](delivery/index.html)。** 无需安装依赖或启动服务器，页面脚本、样式、图标与品牌图片均内嵌。
 
 也可直接双击项目根目录的 `index.html`，它会自动打开 `delivery/index.html`；通过开发服务器访问时仍加载开发源码。
