@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>采摘称重 - 农牧投蓝莓系统</title>
+  </head>
+  <body>
+    <div id="root"><p>正在打开采摘称重原型… <a href="./delivery/index.html">点击打开</a></p></div>
+    <script type="module">
+      // 直接双击开发入口时跳转至离线交付物；构建后直接启动页面。
+      if (location.protocol === 'file:' && !import.meta.env?.PROD) {
+        location.replace(new URL(`./delivery/index.html${location.hash}`, location.href).href);
+      } else {
+        await import('/src/main.tsx');
+      }
+    </script>
+  </body>
+</html>
