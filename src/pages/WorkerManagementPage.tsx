@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { App, Button, Card, Checkbox, Form, Input, InputNumber, Modal, Pagination, QRCode, Select, Space, Switch, Table, Tag } from 'antd';
-import { DeleteOutlined, DownloadOutlined, PlusOutlined, PrinterOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PrinterOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { FLOATING_LAYER_MAX_WIDTH, FLOATING_LAYER_WIDTHS, getModalStyles } from '../components/floatingLayer';
 import TableSelectionToolbar from '../components/TableSelectionToolbar';
 import ColumnSettingsPopover from '../components/ColumnSettingsPopover';
 import type { ColumnOption } from '../components/ColumnSettingsPopover';
+import { exportCsv } from '../data';
 
 type Worker = { key: string; code: string; name: string; gender: '男' | '女'; team: string; phone: string; enabled: boolean; createdAt: string };
 const workerSeed: Array<[string, string, Worker['gender'], string, string, boolean, string]> = [
@@ -16,7 +17,6 @@ const workerSeed: Array<[string, string, Worker['gender'], string, string, boole
   ['G009','刘一','男','第三班组','13800138008',false,'2026-03-10'], ['G010','陈二','女','第一班组','13800138009',true,'2026-03-12'],
 ];
 const initialWorkers: Worker[] = workerSeed.map(([code,name,gender,team,phone,enabled,createdAt]) => ({ key:code,code,name,gender,team,phone,enabled,createdAt }));
-const csvCell = (value: string) => `"${value.replaceAll('"','""')}"`;
 
 export default function WorkerManagementPage() {
   const { message } = App.useApp();
@@ -36,6 +36,7 @@ export default function WorkerManagementPage() {
   const [printCopies,setPrintCopies] = useState(1);
   const [printReady,setPrintReady] = useState(false);
   const filtered = useMemo(() => rows.filter(row => (!applied.code || row.code.toLowerCase().includes(applied.code.toLowerCase())) && (!applied.name || row.name.includes(applied.name)) && (!applied.team || row.team===applied.team) && (applied.status==='全部' || (applied.status==='启用' ? row.enabled : !row.enabled))),[rows,applied]);
+  const selectedRows = rows.filter(row => selected.includes(row.key));
   const pageRows = filtered.slice((page-1)*pageSize,page*pageSize);
   const openQr = (workers: Worker[]) => { setPrintCopies(1); setQrWorkers(workers); };
   useEffect(() => {
@@ -75,16 +76,19 @@ export default function WorkerManagementPage() {
       },
     });
   };
-  const exportRows = () => { const lines=[['工号','姓名','性别','所属班组','联系电话','状态','创建时间'],...filtered.map(row=>[row.code,row.name,row.gender,row.team,row.phone,row.enabled?'启用':'停用',row.createdAt])]; const url=URL.createObjectURL(new Blob(['\ufeff'+lines.map(line=>line.map(value=>csvCell(String(value))).join(',')).join('\n')],{type:'text/csv;charset=utf-8'})); const link=document.createElement('a'); link.href=url; link.download='工人信息.csv'; link.click(); URL.revokeObjectURL(url); message.success(`已导出 ${filtered.length} 条工人信息`); };
+  const exportRows = (exporting = selectedRows.length ? selectedRows : filtered, filename = '工人信息.csv') => {
+    exportCsv(['工号','姓名','性别','所属班组','联系电话','状态','创建时间'], exporting.map(row => [row.code,row.name,row.gender,row.team,row.phone,row.enabled?'启用':'停用',row.createdAt]), filename);
+    message.success(`已导出 ${exporting.length} 条工人信息`);
+  };
   const columns: ColumnsType<Worker> = [
-    {title:'序号',key:'index',width:66,render:(_,__,index)=>(page-1)*pageSize+index+1}, {title:'工号',dataIndex:'code',width:100}, {title:'姓名',dataIndex:'name',width:100}, {title:'性别',dataIndex:'gender',width:80}, {title:'所属班组',dataIndex:'team',width:130}, {title:'联系电话',dataIndex:'phone',width:150},
+    {title:'工号',dataIndex:'code',width:100}, {title:'姓名',dataIndex:'name',width:100}, {title:'性别',dataIndex:'gender',width:80}, {title:'所属班组',dataIndex:'team',width:130}, {title:'联系电话',dataIndex:'phone',width:150},
     {title:'状态',dataIndex:'enabled',width:100,render:(enabled:boolean,row)=><Switch checked={enabled} checkedChildren="启用" unCheckedChildren="停用" onChange={checked=>{setRows(current=>current.map(item=>item.key===row.key?{...item,enabled:checked}:item));message.success(`${row.name}已${checked?'启用':'停用'}`);}}/>},
-    {title:'创建时间',dataIndex:'createdAt',width:130}, {title:'操作',key:'action',width:180,render:(_,row)=><Space size={8} align="center" style={{whiteSpace:'nowrap'}}><Button type="link" className="fruit-link" onClick={()=>openForm(row)}>编辑</Button><Button type="link" className="fruit-link" onClick={()=>openQr([row])}>查看二维码</Button><Button type="link" className="fruit-link" onClick={()=>remove(row)}>删除</Button></Space>},
+    {title:'创建时间',dataIndex:'createdAt',width:130}, {title:'操作',key:'action',width:180,align:'center',render:(_,row)=><Space size={8} align="center" style={{whiteSpace:'nowrap'}}><Button type="link" className="fruit-link" onClick={()=>openForm(row)}>编辑</Button><Button type="link" className="fruit-link" onClick={()=>openQr([row])}>查看二维码</Button><Button type="link" className="fruit-link" onClick={()=>remove(row)}>删除</Button></Space>},
   ];
   const columnKey = (column: ColumnsType<Worker>[number]) => String(column.key??('dataIndex' in column ? column.dataIndex : ''));
-  const dataColumns = columns.filter(column=>!['index','action'].includes(columnKey(column)));
+  const dataColumns = columns.filter(column=>columnKey(column)!=='action');
   const orderedDataColumns = [...dataColumns].sort((left,right)=>columnOrder.indexOf(columnKey(left))-columnOrder.indexOf(columnKey(right)));
-  const visibleColumns = [columns[0],...orderedDataColumns.filter(column=>!hiddenColumns.includes(columnKey(column))),columns[columns.length-1]];
+  const visibleColumns = [...orderedDataColumns.filter(column=>!hiddenColumns.includes(columnKey(column))),columns[columns.length-1]];
   const columnOptions: ColumnOption[] = dataColumns.map(column=>({key:columnKey(column),label:String(column.title)}));
   const reset = () => { const clean={code:'',name:'',team:'',status:'全部'}; setFilters(clean); setApplied(clean); setPage(1); };
   return <div className="worker-page">
@@ -93,12 +97,12 @@ export default function WorkerManagementPage() {
       <label>姓名<Input value={filters.name} placeholder="请输入姓名" onChange={e=>setFilters({...filters,name:e.target.value})}/></label>
       <label>所属班组<Select allowClear value={filters.team||undefined} placeholder="请选择班组" options={teamOptions} onChange={team=>setFilters({...filters,team:team??''})}/></label>
       <label>状态<Select value={filters.status} options={['全部','启用','停用'].map(value=>({value,label:value}))} onChange={status=>setFilters({...filters,status})}/></label>
-      <div className="worker-filter-actions"><Button onClick={reset}>重置</Button><Button type="primary" onClick={()=>{setApplied({...filters});setPage(1);}}>查询</Button></div>
+      <div className="worker-filter-actions"><Button onClick={()=>{reset();setSelected([]);}}>重置</Button><Button type="primary" onClick={()=>{setApplied({...filters});setPage(1);setSelected([]);}}>查询</Button></div>
     </div></Card>
-    <Card className="worker-table-card" bordered={false}><TableSelectionToolbar title="工人列表" selectedCount={selected.length} selectedLabel="名工人" onClear={()=>setSelected([])} className="worker-toolbar" actions={<Space size={8}>
-      {selected.length>0&&<><Button danger icon={<DeleteOutlined/>} onClick={removeSelected}>批量删除</Button><Button icon={<PrinterOutlined/>} onClick={()=>openQr(rows.filter(row=>selected.includes(row.key)))}>打印所选二维码</Button></>}<Button type="primary" icon={<PlusOutlined/>} onClick={()=>openForm()}>新增工人</Button><Button icon={<DownloadOutlined/>} onClick={exportRows}>导出</Button><ColumnSettingsPopover columns={columnOptions} hiddenKeys={hiddenColumns} onHiddenKeysChange={setHiddenColumns} order={columnOrder} onOrderChange={setColumnOrder}/>
-    </Space>} />
-      <Table<Worker> rowKey="key" size="small" columns={visibleColumns} dataSource={pageRows} pagination={false} rowSelection={{selectedRowKeys:selected,onChange:keys=>setSelected(keys)}} scroll={{x:visibleColumns.reduce((sum,column)=>sum+Number(column.width??100),40)}} locale={{emptyText:'暂无符合条件的工人'}} />
+    <Card className="worker-table-card" bordered={false}><TableSelectionToolbar title="工人列表" selectedCount={selected.length} selectedLabel="名工人" onClear={()=>setSelected([])} className="worker-toolbar"
+      batchActions={<Space size={8}><Button danger icon={<DeleteOutlined/>} onClick={removeSelected}>批量删除</Button><Button icon={<PrinterOutlined/>} onClick={()=>openQr(selectedRows)}>批量打印二维码</Button><Button onClick={()=>exportRows(selectedRows,'工人信息-所选记录.csv')}>批量导出</Button></Space>}
+      fixedActions={<Space size={8}><Button type="primary" onClick={()=>openForm()}>新增工人</Button><Button onClick={()=>exportRows()} disabled={!filtered.length}>导出</Button><ColumnSettingsPopover columns={columnOptions} hiddenKeys={hiddenColumns} onHiddenKeysChange={setHiddenColumns} order={columnOrder} onOrderChange={setColumnOrder}/></Space>} />
+      <Table<Worker> rowKey="key" size="small" columns={visibleColumns} dataSource={pageRows} pagination={false} rowSelection={{selectedRowKeys:selected,onChange:keys=>setSelected(keys),preserveSelectedRowKeys:true}} scroll={{x:visibleColumns.reduce((sum,column)=>sum+Number(column.width??100),40)}} locale={{emptyText:'暂无符合条件的工人'}} />
       <div className="worker-pagination"><span>共 {filtered.length} 项数据</span><Pagination current={page} pageSize={pageSize} pageSizeOptions={[10,20,50,100]} total={filtered.length} showSizeChanger showQuickJumper onChange={(nextPage,nextSize)=>{setPage(nextSize!==pageSize?1:nextPage);setPageSize(nextSize);}} /></div>
     </Card>
     <Modal className="business-modal worker-edit-modal" centered width={FLOATING_LAYER_WIDTHS.complexModal} style={{maxWidth:FLOATING_LAYER_MAX_WIDTH}} styles={getModalStyles()} open={formOpen} title={editing?'编辑工人':'新增工人'} onCancel={()=>setFormOpen(false)} onOk={save} okText="保存" cancelText="取消"><Form form={form} layout="vertical"><div className="worker-form-grid"><Form.Item name="code" label="工号" rules={[{required:true,message:'请输入工号'},{validator:(_,value)=>!value||editing||!rows.some(row=>row.code===value)?Promise.resolve():Promise.reject(new Error('工号已存在'))}]}><Input disabled={!!editing} maxLength={20} placeholder="请输入工号"/></Form.Item><Form.Item name="name" label="姓名" rules={[{required:true,message:'请输入姓名'}]}><Input maxLength={30} placeholder="请输入姓名"/></Form.Item><Form.Item name="gender" label="性别" rules={[{required:true,message:'请选择性别'}]}><Select placeholder="请选择性别" options={['男','女'].map(value=>({value,label:value}))}/></Form.Item><Form.Item name="team" label="所属班组" rules={[{required:true,whitespace:true,message:'请输入所属班组'}]}><Input maxLength={30} placeholder="请输入所属班组"/></Form.Item><Form.Item name="phone" label="联系电话" rules={[{required:true,message:'请输入联系电话'},{pattern:/^1\d{10}$/,message:'请输入有效的 11 位手机号'}]}><Input maxLength={11} placeholder="请输入联系电话"/></Form.Item><Form.Item name="enabled" label="状态" valuePropName="checked"><Switch checkedChildren="启用" unCheckedChildren="停用"/></Form.Item></div></Form></Modal>

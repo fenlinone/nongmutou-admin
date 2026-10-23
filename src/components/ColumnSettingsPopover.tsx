@@ -10,10 +10,10 @@ type Props = {
   onHiddenKeysChange: (keys: string[]) => void;
   order: string[];
   onOrderChange: (keys: string[]) => void;
-  singleColumn?: boolean;
+  buttonLabel?: string;
 };
 
-export default function ColumnSettingsPopover({ columns, hiddenKeys, onHiddenKeysChange, order, onOrderChange, singleColumn = false }: Props) {
+export default function ColumnSettingsPopover({ columns, hiddenKeys, onHiddenKeysChange, order, onOrderChange, buttonLabel = '列设置' }: Props) {
   const [dragging, setDragging] = useState<string>();
   const orderedColumns = [...columns].sort((left, right) => {
     const leftIndex = order.indexOf(left.key);
@@ -22,7 +22,7 @@ export default function ColumnSettingsPopover({ columns, hiddenKeys, onHiddenKey
   });
   const visibleCount = columns.length - hiddenKeys.filter(key => columns.some(column => column.key === key)).length;
   const content = <div className="column-settings-popover">
-    <div className={`column-settings-list${singleColumn ? ' column-settings-list-single' : ''}`}>
+    <div className="column-settings-list">
       {orderedColumns.map(column => <div key={column.key} className="column-settings-item" onDragOver={event => event.preventDefault()} onDrop={() => {
         if (!dragging || dragging === column.key) return;
         const current = orderedColumns.map(item => item.key);
@@ -39,5 +39,5 @@ export default function ColumnSettingsPopover({ columns, hiddenKeys, onHiddenKey
     </div>
     <div className="column-settings-footer"><Button type="link" size="small" onClick={() => { onHiddenKeysChange([]); onOrderChange(columns.map(column => column.key)); }}>恢复默认</Button></div>
   </div>;
-  return <Popover placement="bottomRight" trigger="click" title={null} content={content} overlayClassName="list-column-settings-overlay"><Button icon={<SettingOutlined />}>列表设置</Button></Popover>;
+  return <Popover placement="bottomRight" trigger="click" title={null} content={content} overlayClassName="list-column-settings-overlay"><Tooltip title={buttonLabel}><Button aria-label={buttonLabel} icon={<SettingOutlined />} /></Tooltip></Popover>;
 }

@@ -36,12 +36,12 @@ export default function SideLayout({ children, activePage }: { children: ReactNo
         </button>)}
         <div className={`side-item ${openMenus.has('blueberry') ? 'is-open' : ''}`}>
           <button className="side-link has-active-child" onClick={() => toggleMenu('blueberry')} title="蓝莓业务管理"><span className="side-icon"><ClusterOutlined /></span><span className="menu-label">蓝莓业务管理</span>{openMenus.has('blueberry') ? <UpOutlined className="menu-chevron" /> : <DownOutlined className="menu-chevron" />}</button>
-          {(openMenus.has('blueberry') || collapsed) && <>{business.map(item => <button key={item.label} className={`side-link child-link ${item.label === activePage ? 'is-active' : ''}`} onClick={() => item.label === '采摘称重' ? window.location.hash = '/weighing/detail' : item.label === '业务概览' ? window.location.hash = '/overview' : item.label === '原果管理' ? window.location.hash = '/raw-fruit' : item.label === '成品管理' ? window.location.hash = '/finished-goods/inventory' : setScope(item.label)} title={item.label}>
+          {(openMenus.has('blueberry') || collapsed) && <>{business.map(item => <button key={item.label} className={`side-link child-link ${item.label === activePage ? 'is-active' : ''}`} onClick={() => item.label === '采摘称重' ? window.location.hash = '/weighing/detail' : item.label === '业务概览' ? window.location.hash = '/overview' : item.label === '原果管理' ? window.location.hash = '/raw-fruit' : item.label === '成品管理' ? window.location.hash = '/finished-goods/inventory' : item.label === '散果管理' ? window.location.hash = '/scattered-fruit' : setScope(item.label)} title={item.label}>
             <span className="side-icon">{item.icon}</span><span className="menu-label">{item.label}</span>
           </button>)}
         <div className={`side-item ${openMenus.has('settings') ? 'is-open' : ''}`}>
           <button className="side-link child-link" onClick={() => toggleMenu('settings')} title="蓝莓业务设置"><span className="side-icon"><SettingOutlined /></span><span className="menu-label">蓝莓业务设置</span>{openMenus.has('settings') ? <UpOutlined className="menu-chevron" /> : <DownOutlined className="menu-chevron" />}</button>
-          {openMenus.has('settings') && !collapsed && <div className="side-submenu">{['工人管理', '果品资料', '包装规格', '标签管理', '作业设备'].map(label => <button className={label === activePage ? 'is-active' : ''} key={label} onClick={() => label === '果品资料' ? window.location.hash = '/fruit-catalog' : label === '工人管理' ? window.location.hash = '/workers' : setScope(label)}>{label}</button>)}</div>}
+          {openMenus.has('settings') && !collapsed && <div className="side-submenu">{['工人管理', '果品资料', '包装规格', '标签管理', '作业设备'].map(label => <button className={label === activePage ? 'is-active' : ''} key={label} onClick={() => label === '果品资料' ? window.location.hash = '/fruit-catalog' : label === '工人管理' ? window.location.hash = '/workers' : label === '包装规格' ? window.location.hash = '/packaging-specs' : label === '标签管理' ? window.location.hash = '/label-management' : setScope(label)}>{label}</button>)}</div>}
         </div>
           </>}
         </div>
@@ -57,7 +57,7 @@ export default function SideLayout({ children, activePage }: { children: ReactNo
     </header>
     <main className="content">{children}</main>
     <Modal open={!!scope} onCancel={() => setScope(undefined)} footer={null} centered title={scope} width={FLOATING_LAYER_WIDTHS.confirmModal} style={{maxWidth:FLOATING_LAYER_MAX_WIDTH}} styles={getModalStyles()} className="business-modal">
-      {scope === '个人资料' ? <p>当前用户：管理员<br />所属基地：新疆·阿克苏基地</p> : <p>当前可演示业务概览、采摘称重、原果管理、成品管理、工人管理与果品资料。成品管理支持组托入库、整托或整箱出库、出库单预览及原批次整批恢复。数据刷新后恢复初始状态；标签、语音和外部服务未连接。</p>}
+      {scope === '个人资料' ? <p>当前用户：管理员<br />所属基地：新疆·阿克苏基地</p> : <p>当前可演示业务概览、采摘称重、原果管理、成品管理、散果管理、工人管理与果品资料。成品管理支持组托入库、整托或整箱出库、出库单预览及原批次整批恢复；散果管理支持独立结存及出入库登记。数据刷新后恢复初始状态；标签、语音和外部服务未连接。</p>}
     </Modal>
   </div>;
 }

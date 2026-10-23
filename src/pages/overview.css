@@ -1,5 +1,5 @@
 /* Figma 业务概览配色与尺寸集中映射，继承现有导航框架。 */
-.overview-page { --overview-purple:#7420ff; --overview-orange:#ff7900; --overview-green:#16c466; --overview-sky:#2b98ff; --overview-blue:#007aff; --overview-teal:#00c6c3; --overview-red:#ff5b64; --overview-muted:#7e96ce; --overview-ink:#17184c; display:flex; flex-direction:column; gap:20px; padding-top:20px; color:var(--overview-ink); }
+.overview-page { --overview-purple:#7420ff; --overview-orange:#ff7900; --overview-green:#16c466; --overview-sky:#2b98ff; --overview-blue:#007aff; --overview-teal:#00c6c3; --overview-red:#ff5b64; --overview-muted:#7e96ce; --overview-ink:#17184c; display:flex; flex-direction:column; gap:20px; color:var(--overview-ink); }
 .overview-section { background:var(--color-bg-container); border-radius:8px; padding:16px 14px; min-width:0; }
 .inventory-section { background:linear-gradient(115deg,var(--color-bg-container),#f1fff9); padding:16px 24px; }
 .overview-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; min-height:34px; }
@@ -10,6 +10,7 @@
 .inventory-update .ant-btn { color:var(--color-text-secondary); font-size:22px; }
 .inventory-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
 .inventory-card { border:1px solid var(--color-border-secondary); border-radius:10px; padding:18px 12px 12px; background:var(--color-bg-container); }
+.scattered-stock-link { cursor:pointer; transition:border-color .15s,box-shadow .15s; }.scattered-stock-link:hover { border-color:var(--color-primary); box-shadow:0 2px 12px #0068ff14; }.scattered-stock-link:focus-visible { outline:2px solid var(--color-primary); outline-offset:2px; }
 .inventory-main { display:flex; align-items:flex-start; gap:18px; padding:0 8px 16px; }
 .inventory-main > div { flex:1; min-width:0; }
 .overview-icon { display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:12px; color:var(--color-bg-container); font-size:34px; flex:none; box-shadow:inset 0 0 10px #ffffff33; background:linear-gradient(135deg,#ffffff22,transparent),var(--tile-color); }
@@ -20,7 +21,7 @@
 .stock-values strong { font-size:27px; line-height:1.1; }.stock-values small { font-size:16px; }
 .stock-details { display:flex; gap:14px; justify-content:space-between; background:var(--figma-header-bg); border-radius:5px; padding:12px; color:var(--overview-muted); font-size:14px; white-space:nowrap; }
 .stock-details span { display:flex; justify-content:space-between; gap:12px; flex:1; }.stock-details b { font-weight:400; }.stock-details i { border-left:1px solid var(--color-border); height:14px; align-self:center; }
-.metrics-section { padding:10px 12px 12px; }.metrics-section .overview-heading { padding:0 10px; }.metrics-section .ant-picker { width:306px; height:44px; }
+.metrics-section { padding:10px 12px 12px; }.metrics-section .overview-heading { padding:0 10px; }.metrics-section .ant-picker-range { width:var(--date-range-picker-width); max-width:100%; }
 .metrics-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px; }
 .overview-page .overview-metric { border:1px solid var(--color-border-secondary)!important; border-radius:10px; box-shadow:none; min-width:0; }
 .overview-page .overview-metric .ant-pro-card-body { padding:12px 14px!important; }
@@ -41,5 +42,5 @@
   height: auto;
   min-height: calc(100dvh - var(--nav-header-height));
   overflow: visible;
-  padding-bottom: 32px;
+  padding-bottom: var(--page-content-gutter);
 }
